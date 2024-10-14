@@ -1,0 +1,16 @@
+{
+    "nodes":[
+        [0,0]
+    ],
+    "elements":[
+        {
+            "type":"link",
+            "parametric":false,
+            "elements":[
+                {
+                    "nodes":[0,1]
+                }
+            ]
+        }
+    ]
+}
