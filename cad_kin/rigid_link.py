@@ -12,7 +12,7 @@ class RigidLink(RigidMech):
     def __call__(self,nodes):
         nodes = nodes[self.node_ids]
 
-        param_nodes = [node.b_linear_parametric for node in nodes]
+        # param_nodes = [node.b_linear_parametric for node in nodes]
 
         # if all(param_nodes):
         #     da = nodes[0].node_j.get_map()-nodes[1].node_j.get_map()
@@ -146,3 +146,35 @@ check that contacting nodes aren't in line with linkages.
         else:
             constants = self(nodes)
             return super().get_constraint_strings(constants)
+        
+    def get_contact_constraint_strings(self, nodes):
+
+        if self.b_parametric:
+            
+            # define factors for polynomial terms
+            param_const = self.get_contact_constraints(nodes)
+            
+            # define map so parameters can be attributed to correct polynomial terms
+            nodes = nodes[self.node_ids]
+            pos, dofs = self.get_node_info(nodes)
+            param_map = {
+                dofs[0]:f"*a{self.n_params}",
+                dofs[1]:f"*a{self.n_params}",
+                dofs[2]:f"*a{self.n_params}",
+                dofs[3]:f"*a{self.n_params}",
+            }
+
+            # save information for post processing
+            self.param_ids = [self.n_params]
+            self.param_rule = ["bin"]
+
+            # Incrememt Parameter Counter
+            self.n_params+=1
+
+            return super().get_constraint_strings(param_const,[param_map])
+        else:
+            self.eq_symbol = ">="
+            constants = self.get_contact_constraints(nodes)
+            string = super().get_constraint_strings(constants)
+            self.eq_symbol = "=="
+            return string

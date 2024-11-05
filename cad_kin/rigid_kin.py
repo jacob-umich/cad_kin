@@ -2,11 +2,11 @@ import numpy as np
 import json
 from wolframclient.evaluation import WolframLanguageSession
 from wolframclient.language import wlexpr
+from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.collections import PatchCollection
 import matplotlib.transforms as transforms
-from dotenv import load_dotenv
 import os
 import logging
 
