@@ -1,5 +1,5 @@
 import numpy as np
-from cad_kin.linear_parametric_node import LinearParametricNode
+# from cad_kin.linear_parametric_node import LinearParametricNode
 
 class Node():
     current_id = 0
@@ -15,7 +15,7 @@ class Node():
         map[1,self.dof[1]]=1
         return map
     
-    def make_linear_parametric(self,node_i,node_j,parameter):
-        return LinearParametricNode(self,node_i,node_j,parameter)
+    # def make_linear_parametric(self,node_i,node_j,parameter):
+    #     return LinearParametricNode(self,node_i,node_j,parameter)
 
 

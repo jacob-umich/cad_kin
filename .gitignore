@@ -1,2 +1,4 @@
 .venv
 .env
+cad_kin/__pycache__
+tests/__pycache__
