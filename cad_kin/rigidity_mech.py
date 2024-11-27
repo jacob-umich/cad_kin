@@ -29,6 +29,8 @@ class RigidMech():
         # each rigidity mechanisms might need multiple contraints. each might
         # have its own param map
         for constant,param_map in zip(constants,param_maps):
+            if not any(constant):
+                continue
             out = "("
             first=True
             for i,v in enumerate(constant):

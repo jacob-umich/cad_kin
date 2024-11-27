@@ -1,6 +1,3 @@
-import sys
-sys.path.append("..")
-
 from cad_kin.structure import Structure
 import numpy as np
 
@@ -114,6 +111,15 @@ elements = [
     {
         "type":"rotationlock",
         "nodes":[14,15,12]
+    },
+    {
+        "type":"pin",
+        "nodes":[0]
+    },
+    {
+        "type":"roller",
+        "nodes":[1],
+        "angle":90
     },
 
 ]

@@ -10,6 +10,8 @@ from cad_kin.strut import Strut
 from wolframclient.evaluation import WolframLanguageSession
 from wolframclient.language import wlexpr
 from dotenv import load_dotenv
+import os
+import numpy as np
 
 class Structure():
 
@@ -42,7 +44,7 @@ class Structure():
         node_data = struct_dict["nodes"]
         self.n_dof = len(node_data)*2
 
-        self.nodes = [Node(data) for data in node_data]
+        self.nodes = np.array([Node(data) for data in node_data])
 
         elem_data = struct_dict["elements"]
         self.elements = []
@@ -54,11 +56,16 @@ class Structure():
     def compile_constraints(self):
         constraints = "out=CylindricalDecomposition[\n{"
         for element in self.elements:
-            constraints+=element.get_constraint_string(self.nodes)
+            strings = element.get_constraint_strings(self.nodes)
+            
+            constraints+= ",\n".join(strings)
             if not (element==self.elements[-1]):
                 constraints+=",\n"
-            if isinstance(element,RigidLink):
-                constraints+=element.get_contact_constraint_strings(self.nodes)
+            if isinstance(element,RigidLink) and not isinstance(element,MidspanConnect):
+                strings = element.get_contact_constraint_strings(self.nodes)
+                if ",\n".join(strings)=="":
+                    continue
+                constraints+=",\n".join(strings)
                 if not (element==self.elements[-1]):
                     constraints+=",\n"
         constraints +="},\n{"
@@ -67,9 +74,9 @@ class Structure():
         #     out+=f"{k}, "
         for i in range(self.n_dof):
             if i!=self.n_dof-1:
-                constraints+=f"x{self.n_dof-1-i}, "
+                constraints+=f"v{self.n_dof-1-i}, "
             else:
-                constraints+=f"x{self.n_dof-1-i}"+"}\n"
+                constraints+=f"v{self.n_dof-1-i}"+"}\n"
         constraints+=']'
         self.constraints = constraints
         return constraints

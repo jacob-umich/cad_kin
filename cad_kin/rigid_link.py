@@ -46,16 +46,18 @@ class RigidLink(RigidMech):
             cond1 = (dist-self.t)<1e-3
             cond2 =  np.linalg.norm(gamma)<np.linalg.norm(a) and np.dot(gamma[:,0],a)>0
             if (dist<1e-8) and cond2:
-                raise Exception(
-'''
-Admissible direction cannot be determined automatically 
-check that contacting nodes aren't in line with linkages.
-'''
-                )
-        if cond1 and cond2:
-            contacts.append(True)
-        else:
-            contacts.append(False)
+#                 raise Exception(
+# '''
+# Admissible direction cannot be determined automatically 
+# check that contacting nodes aren't in line with linkages.
+# '''
+#                 )
+                contacts.append(False)
+                continue
+            if cond1 and cond2:
+                contacts.append(True)
+            else:
+                contacts.append(False)
         return contacts
     
     def detect_node_contact(self,self_node,candidate_nodes):
@@ -101,7 +103,7 @@ check that contacting nodes aren't in line with linkages.
             constraints.append(self.get_midspan_contact_constraint(self_nodes,node))
 
         # Select nodes that could still be in contact with linkage nodes
-        candidate_nodes = candidate_nodes[not(mask)]
+        # candidate_nodes = candidate_nodes[np.logical_not(mask)]
 
         # generate contact constraints for ith node of linkage
         mask1 = self.detect_node_contact(self_nodes[0],candidate_nodes)
@@ -114,8 +116,10 @@ check that contacting nodes aren't in line with linkages.
         contact_nodes = candidate_nodes[mask]
         for node in contact_nodes:
             constraints.append(self.get_node_contact_constraint(self_nodes[1],node))
-
-        return constraints
+        if constraints:
+            return np.concatenate(constraints,axis=0)
+        else:
+            return [[]]
 
 
     def get_constraint_strings(self, nodes):
@@ -175,6 +179,7 @@ check that contacting nodes aren't in line with linkages.
         else:
             self.eq_symbol = ">="
             constants = self.get_contact_constraints(nodes)
+
             string = super().get_constraint_strings(constants)
             self.eq_symbol = "=="
             return string
