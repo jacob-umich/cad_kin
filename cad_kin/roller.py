@@ -29,7 +29,7 @@ class Roller(RigidMech):
             self.roll_direction = roll_direction
 
             if roll_direction=="any":
-
+                
                 # define map so parameters can be attributed to correct polynomial terms
                 param_map = {
                     node.dof[0]:f"*a{self.n_params}",

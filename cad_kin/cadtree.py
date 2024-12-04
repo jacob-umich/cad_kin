@@ -1,13 +1,11 @@
-import re
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import json
 import scipy.linalg as sp
+from cad_kin.cad_constraint import CadConstraint
 
-
-# tracks all nodes
 class CadTree():
     branch_types = [
         "And",
@@ -578,6 +576,7 @@ def get_params(self, branches):
                         break
                 if not found:
                     current_set[param]="arb"
+
 
 class Signature():
     symbol_dict = {
