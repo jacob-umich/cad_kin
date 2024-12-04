@@ -1,5 +1,6 @@
 from cad_kin.rigidity_mech import RigidMech
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Pin(RigidMech):
     eq_symbol = "=="
@@ -39,3 +40,33 @@ class Pin(RigidMech):
         else:
             constants = self(nodes)
             return super().get_constraint_strings(constants)
+    
+    def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params = None ):
+        if self.b_parametric:
+            if not params:
+                return []
+            if abs(params[0])<1e-5:
+                return []
+            
+
+
+        pos, dofs = self.get_node_info(nodes)
+        x = pos[0]
+        y = pos[1]
+        t = drawing_thickness*0.99
+        hinge = []
+        r = plt.Rectangle((x-0.7*t,y-t*0.6),width=t*1.4,height=t*0.6,facecolor=drawing_color)
+        hinge.append(r)
+        c = plt.Circle((x,y),t*.7,facecolor=drawing_color) 
+        base = plt.Rectangle((x-0.9*t,y-t*0.7),width=t*1.8,height=t*0.1,facecolor=drawing_color)
+        hinge.append(c)
+        hinge.append(base)
+
+        for i in range(5):
+            start = (i-2)*0.3-0.2
+            mark = plt.Rectangle((x+start*t,y-t),width=t*.42,height=t*0.06,angle = 45, facecolor=drawing_color)
+            hinge.append(mark)
+        if self.b_parametric:
+            for s in hinge:
+                s.set_facecolor("#389ac7ff")
+        return hinge

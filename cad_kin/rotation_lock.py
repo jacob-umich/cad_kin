@@ -1,4 +1,6 @@
 from cad_kin.rigidity_mech import RigidMech
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 class RotationLock(RigidMech):
     eq_symbol = "=="
@@ -85,3 +87,34 @@ class RotationLock(RigidMech):
         else:
             constants = self(nodes)
             return super().get_constraint_strings(constants)
+        
+    def plot(self, nodes, drawing_thickness, drawing_color='#D0D0D0',params=None):
+        if self.b_parametric:
+            if not params:
+                return []
+            if (params==0).all():
+                return []
+            self.angle = self.get_angle_from_params(params)
+
+        
+        pos, dofs = self.get_node_info(nodes)
+        x = pos[0]
+        y = pos[1]
+        t = drawing_thickness*0.99
+        lock = []
+
+        a = patches.Arc(x,y,width=drawing_thickness*1.5,height=drawing_thickness*1.5,theta1=45,theta2=20)
+        lock.append(a)
+        a = patches.FancyArrowPatch(
+            (x+np.cos(20*np.pi/180)*drawing_thickness*1.5,y+np.sin(20*np.pi/180)*drawing_thickness*1.5),
+            (x+np.cos(0)*drawing_thickness*1.5,y+np.sin(0)*drawing_thickness*1.5),
+            connectionstyle=f"arc3,rad={drawing_thickness*1.5}"
+        )
+        lock.append(a)
+
+
+        if self.b_parametric:
+            for s in lock:
+                s.set_facecolor("#389ac7ff")
+
+        return lock

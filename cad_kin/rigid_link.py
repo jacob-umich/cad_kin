@@ -1,5 +1,6 @@
 from cad_kin.rigidity_mech import RigidMech
 import numpy as np
+import matplotlib.pylab as plt
 from cad_kin.util import decompose
 
 class RigidLink(RigidMech):
@@ -183,3 +184,29 @@ class RigidLink(RigidMech):
             string = super().get_constraint_strings(constants)
             self.eq_symbol = "=="
             return string
+        
+    def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):
+        if self.b_parametric:
+            if not params:
+                return []
+            if (params==0).all():
+                return []
+        pos, dofs = self.get_node_info(nodes)
+        x2=pos[0]
+        x1=pos[2]
+        y2=pos[1]
+        y1=pos[3]
+        t = self.t*0.99
+        if x1==x2:
+            angle=90*np.sign(y2-y1)
+        else:
+            slope = (y2-y1)/(x2-x1)
+            angle = np.arctan(slope)*180/np.pi
+            if (x2-x1)<0:
+                angle+=180
+
+        length = np.sqrt((y2-y1)**2+(x2-x1)**2)
+        r = plt.Rectangle((x1,y1-t/2),width=length,height=t,angle=angle,rotation_point=(x1,y1),facecolor=drawing_color,edgecolor=drawing_color,linewidth=2)
+        if self.b_parametric:
+            r.set_facecolor("#389ac7ff")
+        return r

@@ -75,3 +75,4 @@ class MidspanConnect(RigidLink,RotationLock):
         else:
             constants = self(nodes)
             return super(RotationLock,self).get_constraint_strings(constants)
+        

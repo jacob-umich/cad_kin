@@ -50,3 +50,6 @@ class RigidMech():
             strings.append(out)
 
         return strings
+    
+    def plot(self, nodes, drawing_thickness, drawing_color='#D0D0D0', params=None):
+        return []

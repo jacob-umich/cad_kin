@@ -1,4 +1,6 @@
 from cad_kin.rigidity_mech import RigidMech
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 
 class Roller(RigidMech):
@@ -85,3 +87,59 @@ class Roller(RigidMech):
         else:
             constants = self(nodes)
             return super().get_constraint_strings(constants)
+        
+    def get_angle_from_params(self,params):
+        if self.roll_direction=="any":
+            if params[1]==0:
+                angle=90
+            else:
+                angle = np.arctan(-params[0]/params[1])*180/np.pi
+
+        if self.roll_direction=="x":
+            angle = 0
+
+        if self.roll_direction=="y":
+            angle =90
+
+        return angle
+ 
+    def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params = None):
+        if self.b_parametric:
+            if not params:
+                return []
+            if (params==0).all():
+                return []
+            self.angle = self.get_angle_from_params(params)
+
+        
+        pos, dofs = self.get_node_info(nodes)
+        x = pos[0]
+        y = pos[1]
+        t = drawing_thickness*0.99
+        roller = []
+        r = plt.Rectangle((x-0.7*t,y-t*0.7),width=t*1.4,height=t*0.7,facecolor=drawing_color)
+        roller.append(r)
+        c = plt.Circle((x,y),t*.7,facecolor=drawing_color)
+        
+        roll_1 = plt.Circle((x-0.3*t,y-t*0.9),t*.2,facecolor=drawing_color)
+
+        roll_2 = plt.Circle((x+t*0.3,y-t*0.9),t*.2,facecolor=drawing_color) 
+
+        base = plt.Rectangle((x-0.7*t,y-t*1.2),width=t*1.4,height=t*0.1,facecolor=drawing_color)
+        roller.append(c)
+        roller.append(base)
+        roller.append(roll_1)
+        roller.append(roll_2)
+
+        for i in range(5):
+            start = (i-2)*0.3-0.2
+            mark = plt.Rectangle((x+start*t,y-t*1.5),width=t*.42,height=t*0.06,angle = 45, facecolor=drawing_color)
+            roller.append(mark)
+
+        for s in roller:
+            transf = mpl.transforms.Affine2D().rotate_deg_around(x,y,self.angle)
+            s.set_transform(transf)
+            if self.b_parametric:
+                s.set_facecolor("#389ac7ff")
+
+        return roller
