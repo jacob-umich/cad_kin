@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling","python-dotenv"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -16,7 +16,15 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "wolframclient",
+  "numpy",
+  "matplotlib",
+  "scipy",
+  "python-dotenv"
+]
 
 [project.urls]
 Homepage = "https://github.com/jacob-umich/cad_kin"
 Issues = "https://github.com/jacob-umich/cad_kin/issues"
+

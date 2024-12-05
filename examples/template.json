@@ -1,0 +1,29 @@
+{
+    "nodes":[
+        [0,0],
+        [0,1],
+        [1,0]
+    ],
+    "elements":[
+        {
+            "type":"link",
+            "nodes":[0,1]
+        },
+        {
+            "type":"link",
+            "nodes":[1,2]
+        },
+        {
+            "type":"link",
+            "nodes":[2,0]
+        },
+        {
+            "type":"roller",
+            "nodes":[2]
+        },
+        {
+            "type":"pin",
+            "nodes":[0]
+        }
+    ]
+}
