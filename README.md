@@ -1,16 +1,19 @@
-# Cylindrical Algebraic Decomposition of Linkage Kinematics
+# A Design Algorithm for Immobilizing Deployable Linkages
 
-linkages are an important idealization for many mechanisms. This library provides the tools to formulate the kinematic constraints of a linkage system and apply the CAD analysis to them.
+Linkages are an important idealization for many mechanisms. This library provides the tools to formulate the kinematic constraints of a linkage system, parameterize them, and apply the CAD analysis to explore their design space to find immobile versions of them.
+
+
 
 # Requirements
+- Wolfram Mathematica
 
 # Creating a linkage to analyze:
-To create a linkage, first a structure object must be created. If a dictionary has been defined in the format of the [input file JSON](#general-input-file-structure), it can be used to instantiate the structure:
+To create a linkage, first a structure object must be created. If a dictionary has been defined in the correct [input structure](#general-input-structure), it can be used to instantiate the structure:
 
     from cad_kin.structure import Structure
     s = Structure(structure_dict=None)
 
-If a structure dict was not provided and you are creating a structure from an [input file](#general-input-file-structure), the input file can be loaded
+If a structure dict was not provided and you are creating a structure from an [input file](#general-input-structure), the input file can be loaded
 
     s.load(file_path)
 
@@ -20,8 +23,8 @@ The structure is now loaded. To perform the CAD algorithm and decompose the desi
 
 
 
-# General Input File Structure:
-The structure is made up of two items: nodes to define the geometry, and "elements" to define constraints between nodes. Each of these items are lists.
+# General Input Structure:
+This structure can either be used to create a JSON input file or to create a python dictionary and is made up of two items: nodes to define the geometry, and "elements" to define constraints between nodes. Each of these items are lists.
 
 ```
 {
