@@ -90,11 +90,11 @@ class Structure():
     
     def cad(self) -> CadTree:
         try:
+            constraints = self.compile_constraints()
             param_rules = []
             for elem in self.elements:
                 if elem.b_parametric:
                     param_rules+=elem.param_rule
-            constraints = self.compile_constraints()
             regions =  self.session.evaluate(wlexpr(constraints))
             tree = CadTree(regions,self.n_dof,self.n_params,param_rules)
             return tree
@@ -138,8 +138,8 @@ class Structure():
         # print(scale)            
         
         ax.axis('off')
-        ax.set_xlim(self.x_dim*-0.2,self.x_dim*1.3)
-        ax.set_ylim(self.y_dim*-0.2,self.y_dim*1.3)
+        # ax.set_xlim(self.x_dim*-0.2,self.x_dim*1.3)
+        # ax.set_ylim(self.y_dim*-0.2,self.y_dim*1.3)
         ax.axes.set_aspect('equal')
 
         node, elem = self.draw(alpha,hinge_size)
@@ -184,6 +184,5 @@ class Structure():
     def move(self,flex):
         for i,n in enumerate(self.nodes):
             n.pos+=flex[n.dof]
-
 
         

@@ -1,23 +1,35 @@
-import rigid_kin
-import parse_cad
 import matplotlib as mpl
 import numpy as np
 
+from cad_kin.structure import Structure
+import os
+
+example_path = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)),
+    "structures"
+)
+
 # Four Bar
 def four_bar():
-    bar = rigid_kin.Structure('program/rigid_kin/4_bar/4_bar.json')
-    bar.gen_constraints()
-    bar.add_parametric_contact(2,"any")
+    data_path =os.path.join(
+            example_path,
+            "4_bar.json"
+        )
+    out_path =os.path.join(
+            example_path,
+            "Example_output",
+            "4_bar"
+        )
+    bar = Structure()
+    bar.load(data_path)
+    tree = bar.cad()
 
     fig = mpl.figure.Figure(dpi=720)
     ax = fig.add_subplot()
-    bar.plot(ax,np.array([0,0]),1,annotate=True)
-    fig.savefig("program/rigid_kin/4_bar/layout.svg", format="svg")
+    bar.plot(ax,np.array([0,0]),1,0.75,annotate=True)
+    fig.savefig(out_path+"/layout.svg", format="svg")
 
-    labels = bar.get_all_labels()
-    geometry = bar.cad('program/rigid_kin/4_bar/4_bar.wls')
-    tree = parse_cad.CadTree(geometry,8,2,labels,bar.parameters)
-    tree.plot_results(bar,"./program/rigid_kin/4_bar",-2,2)
+    tree.plot_results(bar,out_path,-2,2)
     bar.session.terminate()
 
 
@@ -63,6 +75,6 @@ def six_bar():
     bar.session.terminate()
 
 
-# four_bar()
+four_bar()
 # five_bar() 
-six_bar()
+# six_bar()
