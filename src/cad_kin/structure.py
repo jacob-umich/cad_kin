@@ -114,14 +114,23 @@ class Structure():
     def draw(self,alpha,hinge_size,params,**kwargs):
         drawing_thickness = hinge_size
 
-        patches = []
-        nodes = PatchCollection(patches,match_original=True)
-        patches
+        elem_patches = []
         for elem in self.elements:
-            p_i = params[elem.param_ids]
-            patches.append(elem.plot(self.nodes,drawing_thickness,params=p_i,**kwargs))
-
-        elem_patches = PatchCollection(patches,match_original=True)
+            if elem.b_parametric:
+                p_i = params[elem.param_ids]
+                elem_patches.append(
+                    PatchCollection(
+                        elem.plot(self.nodes,drawing_thickness,params=p_i,**kwargs),
+                        match_original=True
+                    )
+                )
+            else:
+                elem_patches.append(
+                    PatchCollection(
+                        elem.plot(self.nodes,drawing_thickness,**kwargs),
+                        match_original=True
+                    )
+                )
 
         patches = []
         for n in self.nodes:
@@ -142,12 +151,9 @@ class Structure():
         # ax.set_ylim(self.y_dim*-0.2,self.y_dim*1.3)
         ax.axes.set_aspect('equal')
 
-        node, elem = self.draw(alpha,hinge_size)
-        c1 = self.plot_bc(alpha)
-        if isinstance(param_vals,np.ndarray):
+        node, elem = self.draw(alpha,hinge_size,param_vals)
 
-            c2 = self.plot_params(param_vals,alpha)
-        nodes,bars = self.plot_struct(alpha)
+
         if isinstance(color,np.ndarray):
             c1.set_facecolor(color)
             c1.set_alpha(alpha)
@@ -159,15 +165,10 @@ class Structure():
             nodes.set_facecolor(color)       
             # nodes.set_alpha(alpha)
         
-        ax.add_collection(bars)
-        if isinstance(param_vals,np.ndarray):
-            c2.set_edgecolor(None)
-            ax.add_collection(c2)
-        
-        c1.set_edgecolor(None)
+        ax.add_collection(node)
+        for elem_patch in elem:
 
-        ax.add_collection(c1)
-        ax.add_collection(nodes)
+            ax.add_collection(elem_patch)
 
         # t = ax.transData.inverted()+transforms.Affine2D().scale(scale)+transforms.Affine2D().translate(1.6,4)+fig.dpi_scale_trans
         # c1.set_transform(c1.get_transform()+t)

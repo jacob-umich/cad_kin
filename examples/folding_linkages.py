@@ -17,9 +17,11 @@ def four_bar():
         )
     out_path =os.path.join(
             example_path,
-            "Example_output",
+            "example_output",
             "4_bar"
         )
+    
+    os.makedirs(out_path,exist_ok=True)
     bar = Structure()
     bar.load(data_path)
     tree = bar.cad()
@@ -29,7 +31,7 @@ def four_bar():
     bar.plot(ax,np.array([0,0]),1,0.75,annotate=True)
     fig.savefig(out_path+"/layout.svg", format="svg")
 
-    tree.plot_results(bar,out_path,-2,2)
+    # tree.plot_results(bar,out_path,-2,2)
     bar.session.terminate()
 
 

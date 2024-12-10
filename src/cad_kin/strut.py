@@ -26,6 +26,6 @@ class Strut(RigidLink):
             if params[0]<0:
                 self.b_cable
         r = super().plot(nodes, drawing_thickness, drawing_color)
-        r.set_facecolor("none")
+        r[0].set_facecolor("none")
         if self.b_cable:
-            r.set_height(r.get_height/10)
+            r[0].set_height(r.get_height/10)

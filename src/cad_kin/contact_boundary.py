@@ -13,7 +13,7 @@ class ContactBC(Roller):
 
     def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):
         if self.b_parametric:
-            if not params:
+            if (params==None).all():
                 return []
             if (params==0).all():
                 return []

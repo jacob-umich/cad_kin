@@ -209,4 +209,4 @@ class RigidLink(RigidMech):
         r = plt.Rectangle((x1,y1-t/2),width=length,height=t,angle=angle,rotation_point=(x1,y1),facecolor=drawing_color,edgecolor=drawing_color,linewidth=2)
         if self.b_parametric:
             r.set_facecolor("#389ac7ff")
-        return r
+        return [r]
