@@ -6,7 +6,7 @@ class Strut(RigidLink):
     def __init__(self,element,n_dof):
         super().__init__(element,n_dof)
         self.b_cable = element.get("cable",False)
-
+        self.b_contact = element.get("contact",False)
     def __call__(self,nodes):
         if self.b_cable:
             return -super().__call__(nodes)

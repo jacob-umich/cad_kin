@@ -25,36 +25,74 @@
             0
         ]
     ],
-    "elems": [
-        [
-            0,
-            1
-        ],
-        [
-            1,
-            2
-        ],
-        [
-            2,
-            3
-        ],
-        [
-            3,
-            4
-        ],
-        [
-            4,
-            5
-        ],
-        [
-            5,
-            0
-        ]
-    ],
-    "boundary_conds": [
-        0,
-        1,
-        11
-    ],
-    "thickness": 0.75
+    "elements": [
+        {
+            "type":"link",
+            "nodes":[0,1],
+            "thickness":0.75
+        },
+        {
+            "type":"link",
+            "nodes":[1,2],
+            "thickness":0.75
+        },
+        {
+            "type":"link",
+            "nodes":[2,3],
+            "thickness":0.75
+        },
+        {
+            "type":"link",
+            "nodes":[3,4],
+            "thickness":0.75
+        },        
+        {
+            "type":"link",
+            "nodes":[4,5],
+            "thickness":0.75
+        },        
+        {
+            "type":"link",
+            "nodes":[5,0],
+            "thickness":0.75
+        },        
+        {
+            "type":"roller",
+            "nodes":[5]
+        },
+        {
+            "type":"pin",
+            "nodes":[0]
+        },
+        {
+            "type":"strut",
+            "nodes":[0,3],
+            "cable":false,
+            "thickness": 0.75,
+            "parametric": true,
+            "contact":false
+        },
+        {
+            "type":"strut",
+            "nodes":[0,4],
+            "cable":false,
+            "thickness": 0.75,
+            "parametric": true,
+            "contact":false
+        },
+        {
+            "type":"rotationlock",
+            "nodes":[3,4,5],
+            "parametric": true
+        },
+        {
+            "type":"contactbc",
+            "nodes":[1],
+            "angle": 0,
+            "parametric": true,
+            "p_options": {
+                "roll_direction": "any"
+            }
+        }
+    ]
 }

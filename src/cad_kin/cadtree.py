@@ -23,23 +23,65 @@ class CadTree():
     ]
     
     def __init__(self,regions,dof,nparam,labels,parameter_info) -> None:
-        self.param_info = []
+        self.param_info=parameter_info
         self.dof=dof
         self.nparam=nparam
         self.regions = regions
         self.labels = labels
         self.root = CadNode(None,None,0)
-        self.nodes = {
+
+
+    def create_tree(self):
+        node_dict = {
             "root":{
                 "instances":[self.root],
                 "count":1
             }
         }
+        # Creates a simple tree that doesn't expand unspecified values or 
+        # reorders them
+        root = CadNode(None,None,0)
+        regions = self.regions
+        self.create_nodes(root,regions)
+        self.register_nodes(root,node_dict)
+        return root
+
+    def register_nodes(self,node,node_dict):
+        """Recursively registers all the nodes in a tree in a dictionary"""
+        for n in node.children:
+            self.register_nodes(n,node_dict)
+        if node.id=="root":
+            return None
+        if node.id in list(node_dict.keys()):
+            count = node_dict[node.id]["count"]    
+            node.instance = count
+            node_dict[node.id]["count"]+=1
+            node_dict[node.id]["instances"].append(node)
+        else:
+            node_dict[node.id]={
+                "instances":[node],
+                "count":1
+            }
+
+    def create_expanded_tree(self):
+        regions = self.regions
+        labels = self.labels
+
+        node_dict = {
+            "root":{
+                "instances":[self.root],
+                "count":1
+            }
+        }
+
         self.create_nodes(self.root,regions)
 
-
-        # check unspecified nodes for each branch
+        # branches trace each path of the tree, creating a separate list of 
+        # nodes
         branches = self.scan_branch(self.root,[])
+
+        # check unspecified nodes for each branch. leaf represents the current 
+        # progress of building the new tree
         for branch in branches:
             branch_ids = [x.id for x in branch]
             leaves = []
@@ -77,20 +119,29 @@ class CadTree():
                         leaves.append(node1)
                         leaves.append(node2)
                         leaves.append(node3)
-
-        # re arrange nodes by secification
+        # re scan the tree and make new branches to incorporate the newly 
+        # created nodes
         branches = self.scan_branch(self.root,[])
+
+        # creating a new tree by re-arranging nodes in each branch based on 
+        # specified order of labels, where some nodes exist in multiple 
+        # branches. 
         for branch in branches:
             leaf = self.root
             for n in labels:
                 for node in branch:
                     if node.id ==n:
-                        # check if node is already in new tree. need this to make new node if parents are different going to put this in check dup node
+                        # check if node is already in new tree by being in a 
+                        # previously specified branch. If node has a new 
+                        # parent, it has already been recorded in the new tree 
+                        # from a previous branch.
                         if node.new_parent==leaf:
                             leaf = node
                             break
-                        # check if node is similar to one already on new tree. Needs to check heritage too.
-                        node = self.check_dup_node(node,leaf) # this needs to take in leaf to determine 
+
+                        # check if node is similar to one already on new tree. 
+                        # Needs to check heritage too.
+                        node = self.check_dup_node(node,leaf,node_dict) # this needs to take in leaf to determine 
 
                         # check if child is already parent's children
                         if not(node in leaf.new_children):
@@ -108,9 +159,52 @@ class CadTree():
 
         self.branches = self.scan_branch(self.root,[])
 
-        for parameter in parameter_info:
-            self.param_info += parameter["rule"]
-            
+    
+    def print_regions(self,fig_path,b_kinematics=False):
+        root = self.create_tree()
+ 
+        def delve(node, size_dict):
+            width = 0
+            depth = 0
+            if len(node.children)==0:
+                size_dict[f"{node.id}_{node.instance}"]=1
+                return size_dict,1,1
+            for n in node.children:
+                size_dict,width_i, depth_i = delve(n,size_dict)
+                width+=width_i
+                depth = max(depth_i+1,depth)
+            size_dict[f"{node.id}_{node.instance}"]= width
+            return size_dict,width,depth
+        size_dict = {}
+        size_dict,fig_height,fig_width = delve(root,size_dict)
+        cell_width = 2.5
+        cell_height = 48/72
+
+        fig,ax = plt.subplots(dpi=300,figsize=[(fig_width+2)*cell_width,(fig_height+2)*cell_height]) 
+        ax.axis('off')
+        ax.margins(0)
+        ax.set_xlim(-0.2*cell_width,(fig_width+1)*cell_width)
+        ax.set_ylim(-(fig_height+1)*cell_height,cell_height)
+        def recurse_print(node,start_pos):
+            ax.text(
+                start_pos[0],
+                cell_height/2+start_pos[1],
+                node.__repr__()
+            )
+            prev_width = 0
+            for n in node.children:
+                recurse_print(
+                    n,
+                    [
+                        start_pos[0]+cell_width,
+                        start_pos[1]-prev_width*cell_height
+                    ]
+                )
+                prev_width+=size_dict[f"{n.id}_{n.instance}"]
+        recurse_print(root,[0,0])
+        
+        fig.savefig(fig_path,format="svg",bbox_inches="tight")
+
     
     def create_man_node(self,label,eq_type):
         const = CadConstraint(None,self.dof)
@@ -155,34 +249,41 @@ class CadTree():
             parent.children.append(child)
             return child
         
-    def check_dup_node(self,node,leaf):
+    def check_dup_node(self,node,leaf,node_dict):
 
-        if node.id in list(self.nodes.keys()):
-            count = self.nodes[node.id]["count"]
-            instances = self.nodes[node.id]["instances"]
+        if node.id in list(node_dict.keys()):
+            count = node_dict[node.id]["count"]
+            instances = node_dict[node.id]["instances"]
             matches = [x.const==node.const for x in instances]
 
             if any(matches):
-                # mutliple matches are possible because there is node copying. need to check heritage of each match
-                match_instances = [i for (i, v) in zip(instances, matches) if v]
+                # mutliple matches are possible because there is node copying. 
+                # need to check heritage of each match
+                match_instances = [
+                    i for (i, v) 
+                    in zip(instances, matches) 
+                    if v
+                ]
                 for match in match_instances:
                     if self.heritage_check(leaf,match):
                         return match
                 
-                # create new node if node nees to be copied across different heritages. Needs to copy exact constraint but be a different node
+                # create new node if node needs to be copied across different 
+                # heritages. Needs to copy exact constraint but be a different 
+                # node
                 if any([node==match for match in match_instances]):
                     node = CadNode(node.const,None,count)
                 node.instance = count
-                self.nodes[node.id]["count"]+=1
-                self.nodes[node.id]["instances"].append(node)
+                node_dict[node.id]["count"]+=1
+                node_dict[node.id]["instances"].append(node)
                 return node
             else:
                 node.instance = count
-                self.nodes[node.id]["count"]+=1
-                self.nodes[node.id]["instances"].append(node)
+                node_dict[node.id]["count"]+=1
+                node_dict[node.id]["instances"].append(node)
                 return node
         else:
-            self.nodes[node.id]={
+            node_dict[node.id]={
                 "instances":[node],
                 "count":1
             }
@@ -488,6 +589,7 @@ class CadTree():
 
                 return False
         return True
+    
     def sample_params(self,param_nodes):
         params = []
         for p in range(self.nparam):
@@ -543,16 +645,19 @@ class CadNode():
         if const:
             self.const = const
             if self.const.parameter:
-                out = "c"
+                out = "a"
             else:
-                out = "x"
+                out = "v"
             out +=f"{self.const.primary}"
             self.id = out
         else:
             self.id = "root"
         
     def __repr__(self) -> str:
-        return self.id
+        out = self.id
+        if getattr(self,"const",False):
+            out+= ": "+ f"{self.const}"
+        return out
         
     
 

@@ -15,6 +15,9 @@ class Node():
         map[1,self.dof[1]]=1
         return map
     
+    def __repr__(self) -> str:
+        return self.id
+    
     # def make_linear_parametric(self,node_i,node_j,parameter):
     #     return LinearParametricNode(self,node_i,node_j,parameter)
 

@@ -81,7 +81,7 @@ class RotationLock(RigidMech):
             self.param_rule = ["bin"]
 
             # Incrememt Parameter Counter
-            self.n_params+=1
+            RigidMech.n_params+=1
 
             return super().get_constraint_strings(param_const,[param_map])
         else:
@@ -89,12 +89,6 @@ class RotationLock(RigidMech):
             return super().get_constraint_strings(constants)
         
     def plot(self, nodes, drawing_thickness, drawing_color='#D0D0D0',params=None):
-        if self.b_parametric:
-            if not params:
-                return []
-            if (params==0).all():
-                return []
-            self.angle = self.get_angle_from_params(params)
 
         
         pos, dofs = self.get_node_info(nodes)
@@ -112,9 +106,5 @@ class RotationLock(RigidMech):
         )
         lock.append(a)
 
-
-        if self.b_parametric:
-            for s in lock:
-                s.set_facecolor("#389ac7ff")
 
         return lock

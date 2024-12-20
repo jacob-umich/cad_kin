@@ -45,7 +45,7 @@ class Roller(RigidMech):
                 self.param_rule = ["a","b"]
 
                 # Incrememt Parameter Counter
-                self.n_params+=2
+                RigidMech.n_params+=2
 
             if roll_direction=="x":
 
@@ -63,7 +63,7 @@ class Roller(RigidMech):
                 self.param_rule = ["bin"]
 
                 # Incrememt Parameter Counter
-                self.n_params+=1
+                RigidMech.n_params+=1
 
             if roll_direction=="y":
                 # define map so parameters can be attributed to correct polynomial terms
@@ -80,7 +80,7 @@ class Roller(RigidMech):
                 self.param_rule = ["bin"]
 
                 # Incrememt Parameter Counter
-                self.n_params+=1
+                RigidMech.n_params+=1
             
             return super().get_constraint_strings(param_const,[param_map])
 
@@ -103,15 +103,11 @@ class Roller(RigidMech):
 
         return angle
  
-    def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params = None):
+    def plot_internal(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params = None):
         if self.b_parametric:
-            if not params:
-                return []
-            if (params==0).all():
-                return []
             self.angle = self.get_angle_from_params(params)
 
-        
+        nodes = nodes[self.node_ids]
         pos, dofs = self.get_node_info(nodes)
         x = pos[0]
         y = pos[1]
@@ -139,7 +135,5 @@ class Roller(RigidMech):
         for s in roller:
             transf = mpl.transforms.Affine2D().rotate_deg_around(x,y,self.angle)
             s.set_transform(transf)
-            if self.b_parametric:
-                s.set_facecolor("#389ac7ff")
 
         return roller

@@ -8,6 +8,7 @@ from cad_kin.roller import Roller
 from cad_kin.rotation_lock import RotationLock
 from cad_kin.strut import Strut
 from cad_kin.cadtree import CadTree
+from cad_kin.rigidity_mech import RigidMech
 from wolframclient.evaluation import WolframLanguageSession
 from wolframclient.language import wlexpr
 from matplotlib.collections import PatchCollection
@@ -15,6 +16,7 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv,find_dotenv
 import os
 import numpy as np
+import traceback
 
 class Structure():
 
@@ -32,11 +34,9 @@ class Structure():
     def __init__(self,struct_dict=None):
         if struct_dict:
             self.load_struct_dict(struct_dict)
-        try:
-            load_dotenv()
-            self.session = WolframLanguageSession(os.getenv("WOLFRAM_KERNEL_PATH"))
-        except Exception:
-            print('wolfram kernel not initialized')
+        load_dotenv()
+        self.wolfram_path = os.getenv("WOLFRAM_KERNEL_PATH")
+
             
     
     def load(self,fp):
@@ -51,6 +51,14 @@ class Structure():
 
         self.nodes = np.array([Node(data) for data in node_data])
 
+        # find bounds of structure
+        x_min = min([node.pos[0] for node in self.nodes])
+        x_max = max([node.pos[0] for node in self.nodes])
+        y_min = min([node.pos[1] for node in self.nodes])
+        y_max = max([node.pos[1] for node in self.nodes])
+        self.bounds = np.array([x_min,x_max,y_min,y_max])
+
+
         elem_data = struct_dict["elements"]
         self.elements = []
         for elem in elem_data:
@@ -58,9 +66,11 @@ class Structure():
             self.elements.append(
                 elem_obj
             )
-        self.n_params = RigidLink.n_params
+        
         
     def compile_constraints(self):
+        # bug, if compile constraints is called more than once, 
+        # design parameter numbers will be incremented again
         constraints = "out=CylindricalDecomposition[\n{"
         for element in self.elements:
             strings = element.get_constraint_strings(self.nodes)
@@ -77,8 +87,9 @@ class Structure():
                     constraints+=",\n"
         constraints +="},\n{"
 
-        # for k in parameters:
-        #     out+=f"{k}, "
+        self.n_params = RigidMech.n_params
+        for k in range(self.n_params):
+            constraints+=f"a{k}, "
         for i in range(self.n_dof):
             if i!=self.n_dof-1:
                 constraints+=f"v{self.n_dof-1-i}, "
@@ -90,17 +101,27 @@ class Structure():
     
     def cad(self) -> CadTree:
         try:
+            self.session = WolframLanguageSession(self.wolfram_path)
+        except Exception as e:
+            print('wolfram kernel not initialized') 
+            print(e)
+            return None
+        try:
             constraints = self.compile_constraints()
             param_rules = []
             for elem in self.elements:
                 if elem.b_parametric:
                     param_rules+=elem.param_rule
             regions =  self.session.evaluate(wlexpr(constraints))
-            tree = CadTree(regions,self.n_dof,self.n_params,param_rules)
+
+            tree = CadTree(regions,self.n_dof,self.n_params,self.get_labels(),param_rules)
             return tree
         except Exception as e:
+            print("CAD algorithm Failed")
             print(e)
-            print('wolfram kernel not initialized')       
+            print(traceback.format_exc())
+        finally:
+            self.session.terminate()
     
     def get_labels(self): 
         dofs = []
@@ -147,8 +168,14 @@ class Structure():
         # print(scale)            
         
         ax.axis('off')
-        # ax.set_xlim(self.x_dim*-0.2,self.x_dim*1.3)
-        # ax.set_ylim(self.y_dim*-0.2,self.y_dim*1.3)
+        ax.set_xlim(
+            self.bounds[0]-hinge_size*3,
+            self.bounds[1]+hinge_size*3
+        )
+        ax.set_ylim(
+            self.bounds[2]-hinge_size*3,
+            self.bounds[3]+hinge_size*3
+        )
         ax.axes.set_aspect('equal')
 
         node, elem = self.draw(alpha,hinge_size,param_vals)
@@ -165,11 +192,11 @@ class Structure():
             nodes.set_facecolor(color)       
             # nodes.set_alpha(alpha)
         
-        ax.add_collection(node)
         for elem_patch in elem:
 
             ax.add_collection(elem_patch)
 
+        ax.add_collection(node)
         # t = ax.transData.inverted()+transforms.Affine2D().scale(scale)+transforms.Affine2D().translate(1.6,4)+fig.dpi_scale_trans
         # c1.set_transform(c1.get_transform()+t)
 

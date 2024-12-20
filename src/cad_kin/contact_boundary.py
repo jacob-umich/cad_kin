@@ -7,19 +7,17 @@ class ContactBC(Roller):
     eq_symbol = ">="
     def __init__(self,element,n_dof) -> None:
         super().__init__(element,n_dof)
+        
 
     def __call__(self,nodes):
         return super().__call__(nodes)
 
-    def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):
+    def plot_internal(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):
         if self.b_parametric:
-            if (params==None).all():
-                return []
-            if (params==0).all():
-                return []
             self.angle = super().get_angle_from_params(params)
             if params[1]<0:
                 self.angle+=180
+        nodes = nodes[self.node_ids]
         pos, dofs = self.get_node_info(nodes)
         x = pos[0]
         y = pos[1]
@@ -37,7 +35,6 @@ class ContactBC(Roller):
         for s in roller:
             transf = mpl.transforms.Affine2D().rotate_deg_around(x,y,self.angle)
             s.set_transform(transf)
-            if self.b_parametric:
-                s.set_facecolor("#389ac7ff")
+
         return roller
     

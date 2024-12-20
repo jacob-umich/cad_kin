@@ -34,7 +34,7 @@ class Pin(RigidMech):
             self.param_rule = ["bin"]
 
             # Incrememt Parameter Counter
-            self.n_params+=1
+            RigidMech.n_params+=1
 
             return super().get_constraint_strings(param_const,[param_map]*2)
         else:
@@ -42,13 +42,6 @@ class Pin(RigidMech):
             return super().get_constraint_strings(constants)
     
     def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params = None ):
-        if self.b_parametric:
-            if not params:
-                return []
-            if abs(params[0])<1e-5:
-                return []
-            
-
 
         pos, dofs = self.get_node_info(nodes)
         x = pos[0]
@@ -66,7 +59,5 @@ class Pin(RigidMech):
             start = (i-2)*0.3-0.2
             mark = plt.Rectangle((x+start*t,y-t),width=t*.42,height=t*0.06,angle = 45, facecolor=drawing_color)
             hinge.append(mark)
-        if self.b_parametric:
-            for s in hinge:
-                s.set_facecolor("#389ac7ff")
+
         return hinge

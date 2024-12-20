@@ -21,7 +21,7 @@ class RigidLink(RigidMech):
 
         positions, dofs = self.get_node_info(nodes)
 
-        # vectore between two nodes
+        # vector between two nodes
         a = positions[2:4]-positions[0:2]
 
         # difference in map vectors
@@ -108,13 +108,13 @@ class RigidLink(RigidMech):
 
         # generate contact constraints for ith node of linkage
         mask1 = self.detect_node_contact(self_nodes[0],candidate_nodes)
-        contact_nodes = candidate_nodes[mask]
+        contact_nodes = candidate_nodes[mask1]
         for node in contact_nodes:
             constraints.append(self.get_node_contact_constraint(self_nodes[0],node))
 
         # generate contact constraints for jth node of linkage
         mask2 = self.detect_node_contact(self_nodes[1],candidate_nodes)
-        contact_nodes = candidate_nodes[mask]
+        contact_nodes = candidate_nodes[mask2 ]
         for node in contact_nodes:
             constraints.append(self.get_node_contact_constraint(self_nodes[1],node))
         if constraints:
@@ -174,7 +174,7 @@ class RigidLink(RigidMech):
             self.param_rule = ["bin"]
 
             # Incrememt Parameter Counter
-            self.n_params+=1
+            RigidMech.n_params+=1
 
             return super().get_constraint_strings(param_const,[param_map])
         else:
@@ -185,12 +185,8 @@ class RigidLink(RigidMech):
             self.eq_symbol = "=="
             return string
         
-    def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):
-        if self.b_parametric:
-            if not params:
-                return []
-            if (params==0).all():
-                return []
+    def plot_internal(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):
+        nodes = nodes[self.node_ids]
         pos, dofs = self.get_node_info(nodes)
         x2=pos[0]
         x1=pos[2]
@@ -207,6 +203,5 @@ class RigidLink(RigidMech):
 
         length = np.sqrt((y2-y1)**2+(x2-x1)**2)
         r = plt.Rectangle((x1,y1-t/2),width=length,height=t,angle=angle,rotation_point=(x1,y1),facecolor=drawing_color,edgecolor=drawing_color,linewidth=2)
-        if self.b_parametric:
-            r.set_facecolor("#389ac7ff")
+
         return [r]
