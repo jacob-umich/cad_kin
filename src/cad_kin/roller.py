@@ -19,7 +19,7 @@ class Roller(RigidMech):
         map = self.get_map_matrix(node.dof)
         return np.matmul(values,map)
     
-    def get_constraint_strings(self,nodes):
+    def get_constraint_strings(self,nodes,mod_mat):
         node = nodes[self.node_ids][0]
 
         if self.b_parametric:
@@ -38,7 +38,7 @@ class Roller(RigidMech):
 
                 # define factors for polynomial terms
                 self.angle = -45
-                param_const = self(nodes)
+                param_const = np.matmul(self(nodes),mod_mat)
 
                 # save information for post processing
                 self.param_ids = [self.n_params,self.n_params+1]
@@ -56,7 +56,7 @@ class Roller(RigidMech):
                 
                 # define factors for polynomial terms
                 self.angle = 0
-                param_const = self(nodes)
+                param_const = np.matmul(self(nodes),mod_mat)
 
                 # save information for post processing
                 self.param_ids = [self.n_params]
@@ -73,7 +73,7 @@ class Roller(RigidMech):
                 
                 # define factors for polynomial terms
                 self.angle = -90
-                param_const = self(nodes)
+                param_const = np.matmul(self(nodes),mod_mat)
 
                 # save information for post processing
                 self.param_ids = [self.n_params]
@@ -85,7 +85,7 @@ class Roller(RigidMech):
             return super().get_constraint_strings(param_const,[param_map])
 
         else:
-            constants = self(nodes)
+            constants = np.matmul(self(nodes),mod_mat)
             return super().get_constraint_strings(constants)
         
     def get_angle_from_params(self,params):

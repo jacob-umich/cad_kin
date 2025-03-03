@@ -13,11 +13,11 @@ class Pin(RigidMech):
         map = self.get_map_matrix(node.dof)
         return map
     
-    def get_constraint_strings(self, nodes):
+    def get_constraint_strings(self, nodes,mod_mat):
         if self.b_parametric:
             
             # define factors for polynomial terms
-            param_const = self(nodes)
+            param_const = np.matmul(self(nodes),mod_mat)
             
             # define map so parameters can be attributed to correct polynomial terms
             nodes = nodes[self.node_ids]
@@ -38,7 +38,7 @@ class Pin(RigidMech):
 
             return super().get_constraint_strings(param_const,[param_map]*2)
         else:
-            constants = self(nodes)
+            constants = np.matmul(self(nodes),mod_mat)
             return super().get_constraint_strings(constants)
     
     def plot(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params = None ):

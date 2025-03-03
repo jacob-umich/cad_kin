@@ -145,7 +145,7 @@ class RigidLink(RigidMech):
             self.param_rule = ["bin"]
 
             # Incrememt Parameter Counter
-            self.n_params+=1
+            RigidMech.n_params+=1
 
             return super().get_constraint_strings(param_const,[param_map])
         else:

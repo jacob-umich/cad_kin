@@ -76,7 +76,7 @@ class Structure():
                 constraint_matrix.append(constraint)
 
         constraint_matrix = np.concatenate(constraint_matrix,axis=0)
-        rank = np.linalg.matrix_rank(self.constraints)
+        rank = np.linalg.matrix_rank(constraint_matrix)
         q,r,p=scipy.linalg.qr(
             np.transpose(constraint_matrix),
             mode="full",
@@ -91,14 +91,17 @@ class Structure():
 
         if b_spectral:
             mod_mat = self.get_modes()
+            n_dof = len(mod_mat[0])
         else:
             mod_mat = np.identity(self.n_dof)
+            n_dof = self.n_dof
         for element in self.elements:
             strings = element.get_constraint_strings(self.nodes,mod_mat)
             
             constraints+= ",\n".join(strings)
             if not (element==self.elements[-1]):
                 constraints+=",\n"
+                
             if isinstance(element,RigidLink) and not isinstance(element,MidspanConnect):
                 strings = element.get_contact_constraint_strings(self.nodes)
                 if ",\n".join(strings)=="":
@@ -109,13 +112,14 @@ class Structure():
         constraints +="},\n{"
 
         self.n_params = RigidMech.n_params
+        
         for k in range(self.n_params):
             constraints+=f"a{k}, "
-        for i in range(self.n_dof):
-            if i!=self.n_dof-1:
-                constraints+=f"v{self.n_dof-1-i}, "
+        for i in range(n_dof):
+            if i!=n_dof-1:
+                constraints+=f"v{n_dof-1-i}, "
             else:
-                constraints+=f"v{self.n_dof-1-i}"+"}\n"
+                constraints+=f"v{n_dof-1-i}"+"}\n"
         constraints+=']'
 
         return constraints
@@ -159,6 +163,7 @@ class Structure():
         elem_patches = []
         for elem in self.elements:
             if elem.b_parametric:
+                print(elem.param_ids)
                 p_i = params[elem.param_ids]
                 elem_patches.append(
                     PatchCollection(

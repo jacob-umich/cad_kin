@@ -12,8 +12,8 @@ class Strut(RigidLink):
             return -super().__call__(nodes)
         else:
             return super().__call__(nodes)
-    def get_constraint_strings(self, nodes):
-        string = super().get_constraint_strings(nodes)
+    def get_constraint_strings(self, nodes,mod_mat):
+        string = super().get_constraint_strings(nodes,mod_mat)
         self.param_rule = ["flip"]
         return string
     
@@ -24,7 +24,7 @@ class Strut(RigidLink):
             if (params==0).all():
                 return []
             if params[0]<0:
-                self.b_cable
+                self.b_cable=True
         r = super().plot(nodes, drawing_thickness, drawing_color)
         r[0].set_facecolor("none")
         if self.b_cable:

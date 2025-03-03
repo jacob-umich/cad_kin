@@ -13,20 +13,31 @@
             0.0
         ]
     ],
-    "elems": [
-        [
-            0,
-            1
-        ],
-        [
-            1,
-            2
-        ]
-    ],
-    "boundary_conds": [
-        0,
-        1,
-        5
-    ],
-    "thickness": 0.75
+    "elements": [
+        {
+            "type":"link",
+            "nodes":[0,1],
+            "thickness":0.75
+        },
+        {
+            "type":"link",
+            "nodes":[1,2],
+            "thickness":0.75
+        },       
+        {
+            "type":"roller",
+            "nodes":[2]
+        },
+        {
+            "type":"pin",
+            "nodes":[0]
+        },
+        {
+            "type":"strut",
+            "nodes":[0,2],
+            "cable": false,
+            "thickness":0.75,
+            "parametric":true
+        }
+    ]
 }

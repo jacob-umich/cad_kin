@@ -47,6 +47,8 @@ class RigidMech():
                         out+=f" {s}{int(abs(v)*10**(precision))}*v{i}{param_string} "
                         first = False
             out+=f"){self.eq_symbol}0"
+            if out == "()==0":
+                out = "0==0"
             strings.append(out)
 
         return strings
