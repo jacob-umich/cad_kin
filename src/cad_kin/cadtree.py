@@ -327,8 +327,6 @@ class CadTree():
     def get_velocity(self,mat):
         q,r,p = sp.qr(np.transpose(mat),mode="full",pivoting=True)
         vel = q[:,-1]
-        if vel[-1]==0:
-            print('here')
         vel = vel/vel[-1]
         vel = vel/np.linalg.norm(vel)
         return vel

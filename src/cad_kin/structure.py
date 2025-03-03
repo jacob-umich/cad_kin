@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from dotenv import load_dotenv,find_dotenv
 import os
 import numpy as np
+import scipy.linalg
 import traceback
 
 class Structure():
@@ -67,13 +68,33 @@ class Structure():
                 elem_obj
             )
         
-        
-    def compile_constraints(self):
+    def get_modes(self):
+        constraint_matrix = []
+        for element in self.elements:
+            if element.eq_symbol=="==":
+                constraint = element(self.nodes)
+                constraint_matrix.append(constraint)
+
+        constraint_matrix = np.concatenate(constraint_matrix,axis=0)
+        rank = np.linalg.matrix_rank(self.constraints)
+        q,r,p=scipy.linalg.qr(
+            np.transpose(constraint_matrix),
+            mode="full",
+            pivoting=True
+        )
+        return q[:,rank:]
+
+    def compile_constraints(self,b_spectral=False):
         # bug, if compile constraints is called more than once, 
         # design parameter numbers will be incremented again
         constraints = "out=CylindricalDecomposition[\n{"
+
+        if b_spectral:
+            mod_mat = self.get_modes()
+        else:
+            mod_mat = np.identity(self.n_dof)
         for element in self.elements:
-            strings = element.get_constraint_strings(self.nodes)
+            strings = element.get_constraint_strings(self.nodes,mod_mat)
             
             constraints+= ",\n".join(strings)
             if not (element==self.elements[-1]):

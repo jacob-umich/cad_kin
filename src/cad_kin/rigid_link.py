@@ -123,12 +123,12 @@ class RigidLink(RigidMech):
             return [[]]
 
 
-    def get_constraint_strings(self, nodes):
+    def get_constraint_strings(self, nodes,mod_mat):
 
         if self.b_parametric:
             
             # define factors for polynomial terms
-            param_const = self(nodes)
+            param_const = np.matmul(self(nodes),mod_mat)
             
             # define map so parameters can be attributed to correct polynomial terms
             nodes = nodes[self.node_ids]
@@ -149,7 +149,7 @@ class RigidLink(RigidMech):
 
             return super().get_constraint_strings(param_const,[param_map])
         else:
-            constants = self(nodes)
+            constants = np.matmul(self(nodes),mod_mat)
             return super().get_constraint_strings(constants)
         
     def get_contact_constraint_strings(self, nodes):
