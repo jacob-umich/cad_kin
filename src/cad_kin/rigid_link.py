@@ -170,11 +170,11 @@ class RigidLink(RigidMech):
             }
 
             # save information for post processing
-            self.param_ids = [self.n_params]
-            self.param_rule = ["bin"]
+            # self.param_ids = [self.n_params]
+            # self.param_rule = ["bin"]
 
-            # Incrememt Parameter Counter
-            RigidMech.n_params+=1
+            # # Incrememt Parameter Counter
+            # RigidMech.n_params+=1
 
             return super().get_constraint_strings(param_const,[param_map])
         else:
