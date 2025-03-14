@@ -18,6 +18,7 @@ import os
 import numpy as np
 import scipy.linalg
 import traceback
+import logging
 
 class Structure():
 
@@ -71,7 +72,7 @@ class Structure():
     def get_modes(self):
         constraint_matrix = []
         for element in self.elements:
-            if element.eq_symbol=="==":
+            if element.eq_symbol=="==" and (not element.b_parametric):
                 constraint = element(self.nodes)
                 constraint_matrix.append(constraint)
 
@@ -82,6 +83,7 @@ class Structure():
             mode="full",
             pivoting=True
         )
+        self.modes = q[:,rank:]
         return q[:,rank:]
 
     def compile_constraints(self,b_spectral=False):
@@ -98,18 +100,20 @@ class Structure():
         for element in self.elements:
             strings = element.get_constraint_strings(self.nodes,mod_mat)
             
+            
             constraints+= ",\n".join(strings)
             if not (element==self.elements[-1]):
                 constraints+=",\n"
                 
             if isinstance(element,RigidLink) and not isinstance(element,MidspanConnect):
-                strings = element.get_contact_constraint_strings(self.nodes)
+                strings = element.get_contact_constraint_strings(self.nodes,mod_mat)
                 if ",\n".join(strings)=="":
                     continue
                 constraints+=",\n".join(strings)
                 if not (element==self.elements[-1]):
                     constraints+=",\n"
         constraints +="},\n{"
+        constraints = constraints.replace("0==0,\n","")
 
         self.n_params = RigidMech.n_params
         
@@ -124,15 +128,22 @@ class Structure():
 
         return constraints
     
-    def cad(self) -> CadTree:
+    def cad(self,b_spectral=False,b_debug=False) -> CadTree:
         try:
-            self.session = WolframLanguageSession(self.wolfram_path)
+            if b_debug:
+                self.session = WolframLanguageSession(self.wolfram_path,kernel_loglevel=logging.DEBUG)
+                logging.basicConfig(level=logging.DEBUG)
+            else:
+                self.session = WolframLanguageSession(self.wolfram_path)
+
         except Exception as e:
             print('wolfram kernel not initialized') 
             print(e)
             return None
         try:
-            constraints = self.compile_constraints()
+            constraints = self.compile_constraints(b_spectral)
+            logging.log(logging.DEBUG,constraints)
+            print(constraints)
             param_rules = []
             for elem in self.elements:
                 if elem.b_parametric:

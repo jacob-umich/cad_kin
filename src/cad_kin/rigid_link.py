@@ -122,7 +122,6 @@ class RigidLink(RigidMech):
         else:
             return [[]]
 
-
     def get_constraint_strings(self, nodes,mod_mat):
 
         if self.b_parametric:
@@ -152,13 +151,15 @@ class RigidLink(RigidMech):
             constants = np.matmul(self(nodes),mod_mat)
             return super().get_constraint_strings(constants)
         
-    def get_contact_constraint_strings(self, nodes):
+    def get_contact_constraint_strings(self, nodes,mod_mat):
 
         if self.b_parametric:
             
             # define factors for polynomial terms
-            param_const = self.get_contact_constraints(nodes)
-            
+            try:
+                param_const = np.matmul(self.get_contact_constraints(nodes),mod_mat)
+            except ValueError as e:
+                param_const = self.get_contact_constraints(nodes)
             # define map so parameters can be attributed to correct polynomial terms
             nodes = nodes[self.node_ids]
             pos, dofs = self.get_node_info(nodes)
@@ -179,7 +180,10 @@ class RigidLink(RigidMech):
             return super().get_constraint_strings(param_const,[param_map])
         else:
             self.eq_symbol = ">="
-            constants = self.get_contact_constraints(nodes)
+            try:
+                constants = np.matmul(self.get_contact_constraints(nodes),mod_mat)
+            except ValueError as e:
+                constants = self.get_contact_constraints(nodes)
 
             string = super().get_constraint_strings(constants)
             self.eq_symbol = "=="

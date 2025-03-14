@@ -131,7 +131,6 @@ part_wall = {
 
 part_wall = Structure(struct_dict=part_wall)
 
-cosnt = part_wall.compile_constraints()
+cosnt = part_wall.cad(b_spectral=True,b_debug=True)
 
-with open("examples/part_wal_cad.txt","w") as f:
-    f.write(cosnt)
+

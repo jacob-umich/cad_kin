@@ -57,12 +57,12 @@ class RotationLock(RigidMech):
         )/(a_ref_norm*b_norm)
         return constr
     
-    def get_constraint_strings(self, nodes):
+    def get_constraint_strings(self, nodes,mod_mat):
 
         if self.b_parametric:
             
             # define factors for polynomial terms
-            param_const = self(nodes)
+            param_const = np.matmul(self(nodes),mod_mat)
             
             # define map so parameters can be attributed to correct polynomial terms
             nodes = nodes[self.node_ids]
@@ -85,7 +85,7 @@ class RotationLock(RigidMech):
 
             return super().get_constraint_strings(param_const,[param_map])
         else:
-            constants = self(nodes)
+            constants = np.matmul(self(nodes),mod_mat)
             return super().get_constraint_strings(constants)
         
     def plot(self, nodes, drawing_thickness, drawing_color='#D0D0D0',params=None):

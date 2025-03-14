@@ -65,16 +65,17 @@
             "nodes":[0]
         },
         {
-            "type":"strut",
-            "nodes":[0,3],
-            "cable":false,
-            "thickness": 0.75,
+            "type":"contactbc",
+            "nodes":[1],
+            "angle": 0,
             "parametric": true,
-            "contact":false
+            "p_options": {
+                "roll_direction": "any"
+            }
         },
         {
             "type":"strut",
-            "nodes":[0,4],
+            "nodes":[0,3],
             "cable":false,
             "thickness": 0.75,
             "parametric": true,
@@ -87,12 +88,26 @@
         },
         {
             "type":"contactbc",
-            "nodes":[1],
+            "nodes":[2],
             "angle": 0,
             "parametric": true,
             "p_options": {
                 "roll_direction": "any"
             }
         }
+        
+    ],
+    "extra_elements":[
+
+        
+        {
+            "type":"strut",
+            "nodes":[0,4],
+            "cable":false,
+            "thickness": 0.75,
+            "parametric": true,
+            "contact":false
+        }
+        
     ]
 }

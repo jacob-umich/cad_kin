@@ -17,7 +17,7 @@ class MidspanConnect(RigidLink,RotationLock):
 
         return np.concatenate([const1, const2],axis=0)
     
-    def get_constraint_strings(self, nodes):
+    def get_constraint_strings(self, nodes,mod_mat):
 
         if self.b_parametric:
             
@@ -34,7 +34,7 @@ class MidspanConnect(RigidLink,RotationLock):
             nodes[self.node_ids[1]]=param_node
 
             # define factors for polynomial terms
-            param_const = self(nodes)
+            param_const = np.matmul(self(nodes),mod_mat)
             
             # define map so parameters can be attributed to correct polynomial terms
             nodes = nodes[self.node_ids]
@@ -73,6 +73,6 @@ class MidspanConnect(RigidLink,RotationLock):
 
             return result
         else:
-            constants = self(nodes)
+            constants = np.matmul(self(nodes),mod_mat)
             return super(RotationLock,self).get_constraint_strings(constants)
         

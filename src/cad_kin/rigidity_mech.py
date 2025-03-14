@@ -49,6 +49,8 @@ class RigidMech():
             out+=f"){self.eq_symbol}0"
             if out == "()==0":
                 out = "0==0"
+            if out == "()>=0":
+                out = "0==0"
             strings.append(out)
 
         return strings

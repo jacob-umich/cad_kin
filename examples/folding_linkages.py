@@ -76,24 +76,18 @@ def six_bar():
     bar = Structure()
     bar.load(data_path)
     # print(bar.compile_constraints())
-    tree = bar.cad()
-    tree.print_regions(
-        os.path.join(
-            out_path,
-            "design_space.svg",
-        )
-    )
+    tree = bar.cad(b_spectral=True, b_debug=True)
+    # tree.print_regions(
+    #     os.path.join(
+    #         out_path,
+    #         "design_space.svg",
+    #     )
+    # )
 
     # fig = mpl.figure.Figure(dpi=720)
     # ax = fig.add_subplot()
     # bar.plot(ax,np.array([0,0,0,0]),1,hinge_size=0.75)
     # fig.savefig(format="svg")
-    # bar.add_parametric_strut(0,3)
-    # bar.add_parametric_strut(0,4)
-    # bar.add_parametric_lock(4,3,5)
-    # bar.add_parametric_contact(1,"any")
-    # # bar.add_parametric_contact(2,"any")
-
 
 # four_bar()
 # five_bar() 

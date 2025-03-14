@@ -55,6 +55,47 @@ class ParametricConstraint():
             for param_i,const_i in self.param_dict.items():
                 new_param = np.matmul(const_i,other)
                 out_dict[param_i]=new_param
+        return ParametricConstraint(out_dict)
+
+    def __add__ (self, other):
+        b_pcosntraint = isinstance(other,ParametricConstraint)
+
+        if b_pcosntraint:
+            out_dict = {}
+
+            # add mutual params
+            for param_i,const_i in self.param_dict.items():
+                for param_j,const_j in other.param_dict.items():
+                    if param_i==param_j:
+                        out_dict[param_i]=const_j+const_i
+
+            # get params that are not mutual
+
+            key_i = list(self.param_dict.keys())
+            key_j = list(self.param_dict.keys())
+
+            for ki in key_i:
+                if ki in key_j:
+                    continue
+                else:
+                    out_dict[ki]=self.param_dict[ki]
+            for kj in key_j:
+                if kj in key_i:
+                    continue
+                else:
+                    out_dict[kj]=other.param_dict[kj]
+
+        # for addition with normal matrices
+        else:
+            values = self.param_dict.get("1",None)
+            if values:
+                values+=other
+            else:
+                values=other
+
+            self.param_dict["1"]=values
+            
+            return self
 
 
     def transpose(self):

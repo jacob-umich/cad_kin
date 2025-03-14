@@ -40,17 +40,16 @@ def rigid():
     bar.session.terminate()
 
 def results():
-    six_bar_times = [1.625041,1.820198,2.106280,3.026143,5.120045,6.1,14.8,328.493634,69108.6]
-    two_bar_times = [1.542401,1.542436,1.558767,1.591277,1.639045,2.017968,2.899364,6.647081,15.630903] #3875.994638 for 18
-    rigid_times = [1.673596,1.692530,1.729237,1.586826,1.665556,1.673303,1.760703,1.742394]
-    n_design_params = [0,1,2,3,4,5,6,7,8]
+    six_bar_times = [1.17,1.2,1.3,1.71,7.1,26.2,14.8,242.6]
+    six_bar_spec_times = [1.08,1.1,1.2,3.1,1.22,1.2,1.2]
+    n_design_params = [0,1,2,3,4,5,6,7]
     n_rigid = [2*x+6 for x in range(8)]
     six_params = [x+12 for x in n_design_params]
     two_params = [x+6 for x in n_design_params]
     fig = mpl.figure.Figure(dpi=720)
     ax = fig.add_subplot()
     ax.plot(n_design_params,six_bar_times,label="six-bar",color="#005a00ff",linewidth=4)
-    ax.plot(n_design_params,two_bar_times,label="two-bar",color="#389ac7ff",linewidth=4)
+    ax.plot(n_design_params,six_bar_spec_times,label="spectral",color="#389ac7ff",linewidth=4)
     ax.set_yscale('log')
     ax.legend()
     fig.savefig("program/rigid_kin/scaling.svg", format="svg")
