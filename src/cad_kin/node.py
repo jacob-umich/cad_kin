@@ -4,7 +4,7 @@ import numpy as np
 class Node():
     current_id = 0
     def __init__(self,pos):
-        self.pos = np.array(pos)
+        self.pos = np.array(pos)[None,:]
         self.id = Node.current_id
         Node.current_id +=1
         self.dof = np.array([self.id*2,self.id*2+1])

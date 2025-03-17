@@ -11,11 +11,16 @@ class Parameter():
             self.ids = sorted([int(symbol[1:]) for symbol in symbols])
             self.symbol="*".join([f"a{id}" for id in self.ids])
 
+    def __repr__(self):
+        return self.symbol
 
     def __hash__(self):
-        return self.symbol
+        return hash(self.symbol)
     def __eq__(self, value):
-        return self.ids == value.ids
+        if isinstance(value,Parameter):
+            return self.ids == value.ids
+        else:
+            return self.symbol==value
 
     def __mul__(self,value):
         if self.b_const:
@@ -42,9 +47,9 @@ class ParametricConstraint():
             for param_i,const_i in self.param_dict.items():
                 for param_j,const_j in other.param_dict.items():
                     key = param_i*param_j
-                    values = out_dict.get(key,None)
+                    values = out_dict.get(key,[])
                     new_param = np.matmul(const_i,const_j)
-                    if values:
+                    if len(values)>0:
                         out_dict[key]+=new_param
                     else:
                         out_dict[key]=new_param
@@ -84,11 +89,11 @@ class ParametricConstraint():
                     continue
                 else:
                     out_dict[kj]=other.param_dict[kj]
-
+            return ParametricConstraint(out_dict)
         # for addition with normal matrices
         else:
-            values = self.param_dict.get("1",None)
-            if values:
+            values = self.param_dict.get("1",[])
+            if len(values)>0:
                 values+=other
             else:
                 values=other
@@ -96,7 +101,59 @@ class ParametricConstraint():
             self.param_dict["1"]=values
             
             return self
+    def __sub__ (self, other):
+        b_pcosntraint = isinstance(other,ParametricConstraint)
 
+        if b_pcosntraint:
+            out_dict = {}
+
+            # add mutual params
+            for param_i,const_i in self.param_dict.items():
+                for param_j,const_j in other.param_dict.items():
+                    if param_i==param_j:
+                        out_dict[param_i]=const_i-const_j
+
+            # get params that are not mutual
+
+            key_i = list(self.param_dict.keys())
+            key_j = list(self.param_dict.keys())
+
+            for ki in key_i:
+                if ki in key_j:
+                    continue
+                else:
+                    out_dict[ki]=self.param_dict[ki]
+            for kj in key_j:
+                if kj in key_i:
+                    continue
+                else:
+                    out_dict[kj]=-other.param_dict[kj]
+            return ParametricConstraint(out_dict)
+        # for addition with normal matrices
+        else:
+            values = self.param_dict.get("1",[])
+            if len(values)>0:
+                values-=other
+            else:
+                values=-other
+
+            self.param_dict["1"]=values
+            
+            return self
+
+    def __getitem__(self, key):
+        out_dict = {}
+        for k,v in self.param_dict.items():
+            out_dict[k]=v[key]
+        return ParametricConstraint(out_dict)
+
+    def __setitem__(self, key, value):
+        for k,v in self.param_dict.items():
+            v[key]=value
+
+    def __delitem__(self, key):
+        for k,v in self.param_dict.items():
+            del v[key]
 
     def transpose(self):
         transp_self = copy.deepcopy(self)

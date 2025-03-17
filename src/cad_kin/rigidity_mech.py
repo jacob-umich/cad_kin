@@ -9,7 +9,10 @@ class RigidMech():
         self.parametric_options = element.get("p_options",{})
 
     def get_node_info(self,nodes):
-        positions = np.concatenate([node.pos for node in nodes],axis=0)
+        positions = []
+        for node in nodes:
+            positions.append(node.pos)
+        # positions = np.concatenate([node.pos for node in nodes],axis=0)
         dofs = np.concatenate([node.dof for node in nodes],axis = 0)
         return positions,dofs
     

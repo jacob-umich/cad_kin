@@ -1,6 +1,7 @@
 from cad_kin.rigidity_mech import RigidMech
 import numpy as np
 import matplotlib.pylab as plt
+from cad_kin.linear_parametric_node import LinearParametricNode
 from cad_kin.util import decompose
 
 class RigidLink(RigidMech):
@@ -13,21 +14,18 @@ class RigidLink(RigidMech):
     def __call__(self,nodes):
         nodes = nodes[self.node_ids]
 
-        # param_nodes = [node.b_linear_parametric for node in nodes]
-
-        # if all(param_nodes):
-        #     da = nodes[0].node_j.get_map()-nodes[1].node_j.get_map()
-        #     db = 
-
         positions, dofs = self.get_node_info(nodes)
 
         # vector between two nodes
-        a = positions[2:4]-positions[0:2]
+        a = positions[1]-positions[0]    
+        maps = []
+        for node in nodes:
+            maps.append(node.get_map(self.n_dof))
 
         # difference in map vectors
-        da = self.get_map_matrix(dofs[2:4])-self.get_map_matrix(dofs[0:2])
+        da = maps[1]-maps[0]
 
-        constr = np.matmul(a[None,:],da)
+        constr = a@da
         return constr
     
     def detect_contact(self,nodes):

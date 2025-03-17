@@ -50,7 +50,7 @@ class Structure():
         node_data = struct_dict["nodes"]
         self.n_dof = len(node_data)*2
         
-
+        # will need to change how DOF are defined if we have parametric nodes
         self.nodes = np.array([Node(data) for data in node_data])
 
         # find bounds of structure
@@ -68,6 +68,7 @@ class Structure():
             self.elements.append(
                 elem_obj
             )
+            # set parametric node
         
     def get_modes(self):
         constraint_matrix = []
@@ -143,7 +144,6 @@ class Structure():
         try:
             constraints = self.compile_constraints(b_spectral)
             logging.log(logging.DEBUG,constraints)
-            print(constraints)
             param_rules = []
             for elem in self.elements:
                 if elem.b_parametric:
