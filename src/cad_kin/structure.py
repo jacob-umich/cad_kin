@@ -9,6 +9,7 @@ from cad_kin.rotation_lock import RotationLock
 from cad_kin.strut import Strut
 from cad_kin.cadtree import CadTree
 from cad_kin.rigidity_mech import RigidMech
+from cad_kin.linear_parametric_node import LinearParametricNode
 from wolframclient.evaluation import WolframLanguageSession
 from wolframclient.language import wlexpr
 from matplotlib.collections import PatchCollection
@@ -19,9 +20,9 @@ import numpy as np
 import scipy.linalg
 import traceback
 import logging
+import copy
 
 class Structure():
-
     element_dict = {
         "link":RigidLink,
         "contactbc":ContactBC,
@@ -38,7 +39,6 @@ class Structure():
             self.load_struct_dict(struct_dict)
         load_dotenv()
         self.wolfram_path = os.getenv("WOLFRAM_KERNEL_PATH")
-
             
     
     def load(self,fp):
@@ -48,20 +48,36 @@ class Structure():
 
     def load_struct_dict(self, struct_dict):
         node_data = struct_dict["nodes"]
-        self.n_dof = len(node_data)*2
+        
         
         # will need to change how DOF are defined if we have parametric nodes
         self.nodes = np.array([Node(data) for data in node_data])
 
         # find bounds of structure
-        x_min = min([node.pos[0] for node in self.nodes])
-        x_max = max([node.pos[0] for node in self.nodes])
-        y_min = min([node.pos[1] for node in self.nodes])
-        y_max = max([node.pos[1] for node in self.nodes])
+        x_min = min([node.pos[0,0] for node in self.nodes])
+        x_max = max([node.pos[0,0] for node in self.nodes])
+        y_min = min([node.pos[0,1] for node in self.nodes])
+        y_max = max([node.pos[0,1] for node in self.nodes])
         self.bounds = np.array([x_min,x_max,y_min,y_max])
 
 
         elem_data = struct_dict["elements"]
+        for elem in copy.copy(elem_data):
+            if elem["type"]== "midspan" and elem["parametric"]:
+                new_node = LinearParametricNode(
+                    self.nodes[elem["nodes"][0]],
+                    self.nodes[elem["nodes"][2]],
+                    f"a{RigidMech.n_params}"
+                )
+                RigidMech.n_params+=1
+                self.nodes[elem["nodes"][1]] = new_node
+
+                # element can technically be removed but may put it back in later for post-processing purposes
+                elem_data.remove(elem)
+        self.n_dof = 0
+        for node in self.nodes:
+            if not isinstance(node,LinearParametricNode):
+                self.n_dof+=2
         self.elements = []
         for elem in elem_data:
             elem_obj = self.element_dict[elem["type"]](elem,self.n_dof)
@@ -105,14 +121,16 @@ class Structure():
             constraints+= ",\n".join(strings)
             if not (element==self.elements[-1]):
                 constraints+=",\n"
-                
-            if isinstance(element,RigidLink) and not isinstance(element,MidspanConnect):
-                strings = element.get_contact_constraint_strings(self.nodes,mod_mat)
-                if ",\n".join(strings)=="":
-                    continue
-                constraints+=",\n".join(strings)
-                if not (element==self.elements[-1]):
-                    constraints+=",\n"
+            
+            # turning off contact constraints for now
+
+            # if isinstance(element,RigidLink) and not isinstance(element,MidspanConnect):
+            #     strings = element.get_contact_constraint_strings(self.nodes,mod_mat)
+            #     if ",\n".join(strings)=="":
+            #         continue
+            #     constraints+=",\n".join(strings)
+            #     if not (element==self.elements[-1]):
+            #         constraints+=",\n"
         constraints +="},\n{"
         constraints = constraints.replace("0==0,\n","")
 

@@ -22,41 +22,26 @@ class RigidMech():
         map[1,dofs[1]]=1
         return map
     
-    def get_constraint_strings(self,constants,param_maps=None):
+    def get_constraint_strings(self,constants):
         precision = 10
 
-        if not param_maps:
-            param_maps = [{}]*len(constants)
+
         
-        strings = []
+        strings = constants.get_string()
+        outs = []
         # each rigidity mechanisms might need multiple contraints. each might
         # have its own param map
-        for constant,param_map in zip(constants,param_maps):
-            if not any(constant):
-                continue
+        for s in strings:
             out = "("
-            first=True
-            for i,v in enumerate(constant):
-                if abs(v)>1e-15:
-                    param_string = f"{param_map.get(i,'')}"
-                    if v<0:
-                        s = "-"
-                    else:
-                        s = "+"
-                    if( first and s=="+"):
-                        out+=f" {int(abs(v)*10**(precision))}*v{i}{param_string} "
-                        first=False
-                    else:
-                        out+=f" {s}{int(abs(v)*10**(precision))}*v{i}{param_string} "
-                        first = False
+            out +=s
             out+=f"){self.eq_symbol}0"
             if out == "()==0":
-                out = "0==0"
+                out = ""
             if out == "()>=0":
-                out = "0==0"
-            strings.append(out)
+                out = ""
+            outs.append(out)
 
-        return strings
+        return outs
     
     def plot(self, nodes, drawing_thickness, drawing_color='#D0D0D0', params=None):
         if self.b_parametric:

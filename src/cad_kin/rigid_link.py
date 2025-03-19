@@ -2,6 +2,7 @@ from cad_kin.rigidity_mech import RigidMech
 import numpy as np
 import matplotlib.pylab as plt
 from cad_kin.linear_parametric_node import LinearParametricNode
+from cad_kin.parametric_constraint import Parameter, ParametricConstraint
 from cad_kin.util import decompose
 
 class RigidLink(RigidMech):
@@ -26,6 +27,7 @@ class RigidLink(RigidMech):
         da = maps[1]-maps[0]
 
         constr = a@da
+        constr = ParametricConstraint({Parameter("1"):1})*constr
         return constr
     
     def detect_contact(self,nodes):
@@ -123,19 +125,14 @@ class RigidLink(RigidMech):
     def get_constraint_strings(self, nodes,mod_mat):
 
         if self.b_parametric:
-            
+            parameter = Parameter(f"a{self.n_params}")
             # define factors for polynomial terms
-            param_const = np.matmul(self(nodes),mod_mat)
-            
+            param_const = self(nodes)@mod_mat
+            param_const2 = ParametricConstraint(
+                {parameter:1}
+            )
+            param_const = param_const2*param_const
             # define map so parameters can be attributed to correct polynomial terms
-            nodes = nodes[self.node_ids]
-            pos, dofs = self.get_node_info(nodes)
-            param_map = {
-                dofs[0]:f"*a{self.n_params}",
-                dofs[1]:f"*a{self.n_params}",
-                dofs[2]:f"*a{self.n_params}",
-                dofs[3]:f"*a{self.n_params}",
-            }
 
             # save information for post processing
             self.param_ids = [self.n_params]
@@ -144,9 +141,9 @@ class RigidLink(RigidMech):
             # Incrememt Parameter Counter
             RigidMech.n_params+=1
 
-            return super().get_constraint_strings(param_const,[param_map])
+            return super().get_constraint_strings(param_const)
         else:
-            constants = np.matmul(self(nodes),mod_mat)
+            constants = self(nodes)@mod_mat
             return super().get_constraint_strings(constants)
         
     def get_contact_constraint_strings(self, nodes,mod_mat):

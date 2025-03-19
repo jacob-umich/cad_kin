@@ -36,6 +36,7 @@ class Parameter():
 
 
 class ParametricConstraint():
+    precision=10
     def __init__(self, param_dict):
         self.param_dict = param_dict
 
@@ -61,6 +62,29 @@ class ParametricConstraint():
                 new_param = np.matmul(const_i,other)
                 out_dict[param_i]=new_param
         return ParametricConstraint(out_dict)
+    
+    def __mul__(self,other):
+        b_pcosntraint = isinstance(other,ParametricConstraint)
+
+        if b_pcosntraint:
+            out_dict = {}
+            for param_i,const_i in self.param_dict.items():
+                for param_j,const_j in other.param_dict.items():
+                    key = param_i*param_j
+                    values = out_dict.get(key,[])
+                    new_param = const_i*const_j
+                    if len(values)>0:
+                        out_dict[key]+=new_param
+                    else:
+                        out_dict[key]=new_param
+
+        # for multiplication with normal numbers
+        else:
+            out_dict = {}
+            for param_i,const_i in self.param_dict.items():
+                new_param = const_i*other
+                out_dict[param_i]=new_param
+        return ParametricConstraint(out_dict)      
 
     def __add__ (self, other):
         b_pcosntraint = isinstance(other,ParametricConstraint)
@@ -160,3 +184,33 @@ class ParametricConstraint():
         for param_i,const_i in transp_self.param_dict.items():
             transp_self.param_dict[param_i]=np.transpose(const_i)
         return transp_self
+    
+    def get_string(self):
+        n_constraints = self.param_dict[list(self.param_dict.keys())[0]].shape[0]
+        n_dof = self.param_dict[list(self.param_dict.keys())[0]].shape[1]
+        strings = []
+        for j in range(n_constraints):
+            terms = [""]*n_dof
+            for k,v in self.param_dict.items():
+                if not any(v[j]):
+                    continue
+                for i,c in enumerate(v[j]):
+                    if abs(c)>1e-15:
+                        param_string = str(k)
+                        if c<0:
+                            s = "-"
+                        else:
+                            s = ""
+                        if len(terms[i])>0:
+                            terms[i]+=f"+({s}{int(abs(c)*10**(self.precision))})*v{i}*{param_string} "
+                        else:
+                            terms[i]+=f"({s}{int(abs(c)*10**(self.precision))})*v{i}*{param_string} "
+
+            out = "+".join([t for t in terms if t])
+            strings.append(out)
+        return strings
+    def __str__(self):
+        strings = self.get_string()
+        return ",\n".join(strings)
+    def __repr__(self):
+        return str(self)
