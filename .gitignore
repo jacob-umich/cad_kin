@@ -3,3 +3,4 @@
 src/cad_kin/__pycache__
 tests/__pycache__
 examples/example_output
+*/__pycache__
