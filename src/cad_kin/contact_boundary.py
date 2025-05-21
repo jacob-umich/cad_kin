@@ -1,6 +1,8 @@
 from cad_kin.roller import Roller
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from cad_kin.parametric_constraint import Parameter, ParametricConstraint
+
 import numpy as np
 
 class ContactBC(Roller):
@@ -9,7 +11,7 @@ class ContactBC(Roller):
         super().__init__(element,n_dof)
         
 
-    def __call__(self,nodes):
+    def __call__(self,nodes)->ParametricConstraint:
         return super().__call__(nodes)
 
     def plot_internal(self,nodes,drawing_thickness,drawing_color ='#D0D0D0',params=None ):

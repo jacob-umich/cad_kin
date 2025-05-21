@@ -12,7 +12,7 @@ class RigidLink(RigidMech):
         self.t= element.get("thickness",1)
 
 
-    def __call__(self,nodes):
+    def __call__(self,nodes)->ParametricConstraint: 
         nodes = nodes[self.node_ids]
 
         positions, dofs = self.get_node_info(nodes)

@@ -97,7 +97,8 @@ class Test_Strut(unittest.TestCase):
                     "nodes":[0]
                 },
                 {
-                    "type":"pin",
+                    "type":"roller",
+                    "angle":90,
                     "nodes":[1]
                 },
                 {

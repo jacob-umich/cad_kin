@@ -165,6 +165,15 @@ class ParametricConstraint():
             
             return self
 
+    def __neg__ (self):
+
+        out_dict = {}
+
+        for param_i,const_i in self.param_dict.items():
+            out_dict[param_i]=-const_i
+
+        return ParametricConstraint(out_dict)
+
     def __getitem__(self, key):
         out_dict = {}
         for k,v in self.param_dict.items():
@@ -184,6 +193,61 @@ class ParametricConstraint():
         for param_i,const_i in transp_self.param_dict.items():
             transp_self.param_dict[param_i]=np.transpose(const_i)
         return transp_self
+    
+    def dot(self,other):
+        b_pcosntraint = isinstance(other,ParametricConstraint)
+        if b_pcosntraint:
+            return self@other.transpose()
+        else:
+            return self@np.transpose(other)
+    
+    def concatenate(self,other,axis):
+        b_pcosntraint = isinstance(other,ParametricConstraint)
+
+        if b_pcosntraint:
+            out_dict = {}
+
+            # add mutual params
+            for param_i,const_i in self.param_dict.items():
+                for param_j,const_j in other.param_dict.items():
+                    if param_i==param_j:
+                        out_dict[param_i]=np.concatenate([const_i,const_j],axis=axis)
+
+            # get params that are not mutual
+
+            key_i = list(self.param_dict.keys())
+            key_j = list(self.param_dict.keys())
+
+            for ki in key_i:
+                if ki in key_j:
+                    continue
+                else:
+                    zero_vec = np.zeros(other.param_dict[key_j[0]].shape)
+                    out_dict[ki]=np.concatenate([self.param_dict[ki],zero_vec],axis=axis)
+            for kj in key_j:
+                if kj in key_i:
+                    continue
+                else:                    
+                    zero_vec = np.zeros(other.param_dict[key_i[0]].shape)
+                    out_dict[kj]=np.concatenate([zero_vec,self.param_dict[kj]],axis=axis)
+            return ParametricConstraint(out_dict)
+        # for addition with normal matrices
+        else:
+            out_dict ={}
+            values = self.param_dict.get("1",[])
+            values = np.concatenate([values,other],axis=axis)
+            out_dict["1"]=values
+            zero_vec = np.zeros(shape=other.shape)
+            for param_i,const_i in self.param_dict.items():
+                if param_i!="1":
+                    out_dict[param_i]=np.concatenate([const_i,zero_vec],axis=axis)
+            return ParametricConstraint(out_dict)
+
+    def sqrt(self):
+        out_dict = {}
+        for k,v in self.param_dict.items():
+            out_dict[k]=np.sqrt(v)
+        return ParametricConstraint(out_dict)
     
     def get_string(self):
         n_constraints = self.param_dict[list(self.param_dict.keys())[0]].shape[0]
